@@ -1,0 +1,316 @@
+__________________day 1, week 1______________
+1. image properties
+2. fourier transforms, frequency domain analysis of images
+3. Features of images: resolution, sampling, noise, contrast  
+4. Linear systems and convolution  
+5. Image filters for noise reduction or feature enhancement  
+6. Image segmentation and clean-up  
+7. Quantitative descriptors of image data
+
+signal vs. noise (linear filters), quantitative description of images (foreground & background, resolution, contrast, noise, frequency content). 
+1. measurements over time are signals, measurement over space are images 
+2. kymographs are space and time images
+3. 3d images are "volume", 2 spatial and 1 spectral dimension gives us color image
+4. all light sensors are operating on the principle that incident photons are converted to a current, current to voltage, voltage is amplified and measured. But how is voltage stored digitally?
+5. bit sizes limit storage and precision by 8-bit versus by 16-bit. 
+6. Signal Quantization means real world signals are analog and continous, intensity must be quantized and space must be sampled. 
+7. def comparator (input compared with reference), what if reference is out of range? ---> 
+8. bit depth (more bit good) minimizes green error curve, improve fidelity to which analog signals can be represented
+9. resolution of image is the number of samples taken along each dimension. A resolution of 1920x1080 means image has 1920 rows and 1080 columns
+
+__day 2, week 1 
+1. Matlab commands for reading image file properties, importing and different ways to display them 
+2. imfinfo, imread, imshow, imagesc
+3. file formats: jpg, tiff, png, svg, bmp, gif 
+
+info = imfinfo(filename); 
+Width
+Height
+BitDepth
+ColorType
+
+Filename 
+FileModDate
+FileSize
+Format 
+FormatVersion 
+
+4. thresholding & segmentation (separate objects by applying intensity threshold)
+5. RGB jpg image have 1 more dimension than their spatial dimension, 2D color image would have 3 dimensions (XY+C) 
+6. most monitors display images with bitdepth = 8 
+7. HDR can use bitdepth = 10, scientific image sensors output bitdepth = 16 
+8. 16 bit images can have values from 0-65535, imshow will show a black screen 
+9. Fine-gradation with higher sensitivities
+10. compression can be lossy or lossless, lossy compression introduces image imperfections in exchange for significantly smaller file sizes. 
+_____________________________________
+lab 1 
+
+for i = 1:length(info) 
+	subplot(5,7,i); 
+	imagesc(img(:,:, i), [1700, 3500]); 
+	colormap gray 
+end 
+
+max_proj = max(img, [], 3); 
+figure; 
+imagesc(max_proj, [1700, 3500])
+colormap gray 
+colorbar 
+
+
+find channels
+%for i = 1:2
+   % img(:,:,i) = imread('Image_13.tif', i); 
+%end 
+%imagesc(img); %will not render in color 
+
+
+channel rescaling
+rescaled_red = double(img(:,:,1)); 
+rescaled_red = rescaled_red - min(rescaled_red(:)); % bring minimum value to zero 
+rescaled_red = rescaled_red ./ max(rescaled_red(:)); 
+
+rescaled_green = double(img(:,:,2)); 
+rescaled_green = rescaled_green - min(rescaled_green(:)); % bring minimum value to zero 
+rescaled_green = rescaled_green ./ max(rescaled_green(:)); 
+
+% do the same for green 
+
+rescaled = zeros(size(img)); 
+rescaled(:,:,1) = rescaled_red; 
+rescaled(:,:,2) = rescaled_green; 
+
+
+channel rescaling
+
+rescaled_red = double(img(:,:,1)); 
+rescaled_red = rescaled_red - min(rescaled_red(:)); % bring minimum value to zero 
+rescaled_red = rescaled_red ./ max(rescaled_red(:)); 
+
+rescaled_green = double(img(:,:,2)); 
+rescaled_green = rescaled_green - min(rescaled_green(:)); % bring minimum value to zero 
+rescaled_green = rescaled_green ./ max(rescaled_green(:)); 
+
+% do the same for green 
+
+rescaled = zeros(size(img)); 
+rescaled(:,:,1) = rescaled_red; 
+rescaled(:,:,2) = rescaled_green; 
+imagesc(rescaled)
+
+________________________week 2, day 1________________
+1. resolution: the sampling of space and how it affects our ability to separate adjacent objects in an image (intensity is quantized, space and time are sampled)
+2. sampling: the general theory behind resolution
+3. contrast: how to tell things apart 
+4. noise: corrupting influences of a random nature that affect real images 
+5. Nyquist's theorem is a lower bound that requires two cycles for sampling 
+6. losing information of objects 
+7. microscope objective can be changed according to expectations of center-center distance 
+8. Weber : I_foreground - I_background / I_background ---> 3 times more contrast 
+Advantages: highest contrast 
+Disadvantages: mechanistically pick foregound and backgroud 
+10. Michelson: I_max - I_min / (I_max + I_min) ----> 2.4 more contrast than ratio, no definition of heuristics of foreground and background, 0/0 
+11. ![[Pasted image 20230410100502.png]] 
+Advantages are valid proportional foreground and background number of pixels. 
+
+img = double(imread(‘high.tif'));  
+RMS = sqrt(sum(sum((img - mean(img(:))).^2)))  
+RMS = 3.0711e+04  
+img = double(imread(‘low.tif'));  
+RMS = sqrt(sum(sum((img - mean(img(:))).^2)))  
+RMS = 1.355e+04
+
+___________________________________
+week 2, day 2 
+- perturbational analysis (classical genetic, evolution) 
+- most nematodes are eutelic 
+- building lineage by manual tracing 
+- Semi-automated tracing using computer vision (StarryNite + AceTree) requires transgenic animals 
+- Automate from DIC to lineage
+
+style transfer to solve data-insufficiency problem, train a NN to predict fluorescence from DIC 
+
+1. Noise: sources of noise in images, types of noise and their distribution
+2. Biological noise, photon counting noise 
+3. variation in light sensitivity between pixels 
+4. we read noise by electric noise in the analog to digital conversion process
+5. Dark current = individual electron leaking 
+
+read noise and photon counting noise are what we will focus most on 
+
+**shot noise**
+- collecting ligt is fundamentally a discrete process
+- photons and electrons are indivisible particles and move in integer quantities 
+- Imaging can be thought of as a photon counting problem 
+
+**Counting - Poisson Distribution**
+- counting processes that involve an element of randomness can be described by the Poisson Distribution 
+- PMF = lambda^k * 
+- lambda = ???
+- degree of variabilty in the number of photons, how does it relate to the expected number of photons? 
+- Possion distribution, S = sqrt(x_bar)
+- SNR = sqrt(x) signal to noise ratio of the larger pixel is twice as the SNR of the small
+- grouping smaller pixels together to lessen noise
+
+**Read Noise**
+- pixel value is the product of a charge accumulation, amplification, and analog to digital conversion step. 
+- each pixel has own set of electronics for amplification, each pizel can have slightly different read noises. 
+- general present at constant level, independent of exposure time/signal level. Places a hard lower limit on the number of incident photons that can be reliably detected 
+
+**Mitigating noise** 
+- reduce noise by averaging multiple successive frames together 
+- shot noise, not read noise. 
+- We are not losing resolution. Mean value of signal is lost when the sample moves, averaging movement is blurry is the biggest disadvantage. Binning is averaging as a different way to reduce noise. 
+- Binning - combining the signal from adjacent pixels 
+- Noise fundamentally has high frequency content 
+_________________________________________
+Week 3, day 1 
+- The Fourier Transform is about decomposing signals
+- any signal can be approximated by a sum of sinuoidads of frequency and amplitude 
+- more sinusoids used, the btter the approximation 
+- sin wave is useful because it is defined by two parameters--- amplitude and frequency 
+- e^ix = cos(x) + isin(x) 
+- X(w) = sum(inf, -inf) (x(t)e^-jwt)dt 
+- X(w) = x(t)/e^(iwt)
+- The integral sums up all the values for all frequencies
+
+
+img = imread('grayscale.tif'); 
+imagesc(img); 
+F  = fft2(img); 
+S = fftshift(F); 
+imagesc(abs(log2(S))) // log makes it more visible  
+colorbar 
+
+S(1:100, :) = 0; 
+S(end - 100: end, :) = 0; 
+S(:, 1:100) = 0; 
+S(:, end-100:end) = 0; 
+imagesc(abs(log2(S))) 
+colorbar 
+
+I = ifft2(ifftshift(S)); 
+imagesc(abs(I))
+
+
+fft algorithm returns a jumbled version of frequency map, fftshift just rearranges it in a way that's easier to read
+How do we definethe Nyquist frequency? 
+- the lowest frequency is 1 cycle/aperture width 
+- we can represent cycle/pixel, but that's inconvenient and messy. We should calculate it as cycles per aperture width, gives a natural grounding. 
+- Fourier transform is reversible, cycles per image 
+- linear op = associative & commutative & distributive 
+- Fourier transform extinguishes noise by isolating the noise from the image by associative properties of linear ops. 
+- Two objects with sharp features (low frequency compression, 1:2 has relatively huge different percentage, 121:120 has less different percentages) 
+- Image with gradient with high and low frequencies (sharp boundaries recreate from high-frequency sin waves, vice versa, the less-sharp boundaries are created from low-frequency sin waves) 
+- softing transition by blurring tool in photoshop 
+
+**spatial averaging crisis averted by using fourier transform**
+
+![[Pasted image 20230417102409.png]]
+
+Week 3, day 2
+1. Fourier Transform is the idea that signals can be broken down into sums of simple funcitons like sin waves. We take advantage of the distributive property to filter out noise. Mostly for completeness's sake, learn phases and 2d fourier transform. 
+2. A* cos(ft + p) where p is the phase shift. 
+3. From Euler's formula, the fourier transform represents phase in the form of complex numbers (multiples of sqrt(-1)). 
+4. mitigating noise by zeroing out frequencies
+5. Gaussian takes the form: f(x) = a*e^((x-b)^2/2c^2). 
+6. It is a shape to use in combiantion with the Fourier transform 
+
+______________________________________________
+Week 4, day 1 
+1. Gaussian filter - why the gaussian is a covenient function that can be used in different ways, how to apply a filter in the fourier domain. What the spatial domain representation of a filter means, convolution and an analogy with moving averages. We will take advantage of the distributive property of the fourier transform to do other useful things to images. 
+2. The derivative and laplacian of gaussian filters 
+3. The main reason that the Gaussian is very convenient is that its Fourier transform it itself a Gaussian. 
+4. Wide Gaussian (rate of change of edges is smoother, so much narrower because we are excluding high frequencies, and fourier transform's curve becomes a sharper drop)
+5. Averaging successive frames to reduce noise. 
+6. Gaussian filter's c value. We use the Gaussian to make a weighyed average image: compute a gaussian of desired width, compute FT of that gaussian, compute the FT of your image, multiply the two FT together, compute the IFT of the product. 
+7. Gaussian filter reduces high frequencies noise, but can also blur sharp edges in the image 
+8. Beyong the Gaussian, there are Bessel, Butterworth, Chebyshev, and Elliptic functions used to generate filters. These are based on how steep the cut-off is, and how flat the pass and stop bands are. 
+9. If White = 1 and Black = 0, then reverse (would sharpen edges) low-pass filter, keep low frequency get rid of high frequencies. high pass filter keep high frequencies get rid of low frequencies. High pass filters preserve sharp edges in an image. 
+10. bandpass filter remove high frequency noise and low frequency fluctuations. Enhance edges with low frequencies, and get rid of noise with the high frequency. 
+11. A moving average, we can sketch out an algorithm for this in the spatial domain. The same goes for a Gaussian-weighted moving average. c = standard deviation. 
+12. Convolving this shape with an image is the same as taking the weighted average of each pixel, weighting 
+13. unweighted moving average look like in space and frequency. 
+_____________________________________________
+Week 4, day 2 
+1. next-gen sequencing, needs to be automated somehow. 
+2. Shape detection (shapes and blobs). Blobs are circular edges that are not straight. What mathematical operations could be useful for finding edges in an image? Taking a derivative is separable, so there are two images: dx and dy. 
+3. Shape detection: first blur the image and then compute the derivative. Gaussian function is convenient. The derivative is a linear operator so it obeys the commutative property. 
+4. Gradient operations: filtering by convolution is that the filter and the image don't have to be the same size. 
+5. The Laplacian (second derivative) of a Gaussian.
+6. Edge detection: the problem is that there are two objects that are touching each other, boundary detection not applicable. When we have an non-convenient shape, we use the laplacian of a gaussian to conduct blob detection.  A central peak will give a strong response for bright pixels, a rim that is the opposite sign of the central peak will strengthen the response when encountering background pixels. 
+7. Blobs have edges and are solid rather than hollow, could we design a filter that captures both features? The Laplacian of a Gaussian, c = 7 
+8. dx = diff(gaussian, 2, 2); dy = diff(gaussian, 2, 1); 
+9. diff(gaussian, order_of_derivative)
+10. first derivative for edges, second derivative for blobs 
+11. Choose a blob and find its pixel width, and then divide that number by 6. We can set the c to be that value. (ie. 30 pixels/6 = c = 5)
+12. Centers of nuclei can be filtered, intensity can be threshold-ed. 
+________________________________________________
+Week 6, day 1 
+1. image acquistion, processing, analysis, and measurement (manipulation of image, object tracking, segmentation)
+2. Segmentation is the identification of discrete objects in the image 
+3. tracking is the assemnly of a set of linkages that allows you to follow a set of objects over time. A map of object correspondence. 
+4. The bandpass filter helps enhance the boundaries, if we threshold the filtered image, we're way to close to being to find individual cells. 
+5. Convolution for template matching
+6. Image Segmentation: semantic segmentation and instance segmentation. Semantic segmentation identifies categories of objects within an image on a pixel-by-pixel basis. Instance segmentation identifies each discrete object of a given class within in an image. 
+7. Separate by histogram method, separate by foreground and background. There are usually two humps, and we choose the trough value. 
+8. Otsu's method attempts to find an optimal threhsold based on approximating the histogram as a sum of two Gaussian 
+9. The key is trying to find a threshold where the pixel brighter and dimmer than that threshold have the lowest possible combined variance. This is done by minimzing the intra-class variance. Method: scanning through the pixel intensity, finding point which it is maximum threshold. 
+10. Otsu: minimizes interclass variance. Huang: minimizes fuzziness based on shannon's entrophy. Intermodes, IsoData, Li, MaxEntropu, Mean, MinError, Moments, Percentile, RenyiEntripy, Shanbhag, Triangle, Yen. 
+11. Problems: Sparsity and uneven background.
+12. Image segmentation is computing different thresholds for every pixel in the image, called adaptive thresholding. Thresholding leaves behind messy results-- objects with holes in them, or spurious detections due to noise. 
+13. How do we go from semantic to instance segmentation? 
+______________________
+Week 7 day 1 
+1. convex area (area of the convex hull)
+2. eccentricity (can be 0-1) is the degree to which an oval is stretched 0 is a circle, 1 is a straight line
+
+look at lecture 13 an 12 demo (further clean up before % compute LoG lecture 13)
+Compute LoG filter of the image 
+D = bwdist() % distance calculation 
+%laplacian strength: define cell size, measure pixel value for cell size. Images with similar cell size will be okay, but not for smaller cells. classical sizes would assert universality. 
+%distance matrix doesn't require similar cell size, relative to other neighboring cells. 
+imcomplement(D); 
+minima = imextendedmin(D, 0.5) 
+% change 0.5 is like thresholding, thresholding the cell satisfying local minimum. Might want to shrink, 
+imimprosemin
+W = watershed(I);
+BW = bw; 
+BW(W ==0) 
+the cuts do not have the best determination of boundaries, segmentation by Laplacian works sometimes. 
+
+______________________________
+Week 8, day 1 
+bw3 = bw3 - bwareopen(500); %changing parameters for the pixel size 
+bw4 = bw4 - bwareopen(bw4, 2000); 
+% needs to find area of the cells
+[L,N] = bwlabel(bw4); 
+STATS = regionprops(L, 'Area'); 
+area = zeros()
+hist(area, 100); %checking the right edge of the bin, using histogram to find pixel value. 
+
+Morphographx was motivated by people working with plants 
+CellProfiler 
+Active contours (direct segmentation technique)
+Statistical shape models 
+_________________________________________
+week 8, day 2 
+1. denoising (supervised) 
+2. style transfer (cross-species style transfer for label-free cell lineage tracing)
+3. Cell tracking (link cells across timepoints based on overlap, distance, similarity)
+4. resolving conflicts (segmentation is never perfect, temporal sampling--- image too frequently with excess data, image too infrequently)
+5. distance-based tracking by minimizing total distance of cells. Linear assignment problem is minimizing a function to make links between cells 
+6. pixel-based tracking by tracking without segmentation, attempts to follow patterns of pixel values between successive frames to estimate motion on a region by region basis. 
+________
+Week 8 lab 
+lecture 14_demo1: 
+c should be bigger size, using Laplacian method 
+________________________
+Week 10, day 1 
+1. images are spatially distributed and discrete. 
+2. noise is unwanted- each pixel has its own set of electronics for amplification, each pixel can have slightly different read noise properties
+3. Cycles into hertz, aperture width
+4. bandpass filters will remove both high frequency noise and low frequency fluctuations. 
+5. edge finding math operations (use highpass filtering and derivatives!!) Derivatives are susceptible to noise
+6. DoG and LoG filters (one advantage of filtering by convolution is that the filter and the image don't have to be the same size). A Gaussian kernel that is big enough to go very close to 0 in value at the edges of the image
+7. blobs have edges and are solid rather than hollow, could design a filter that captures both features
